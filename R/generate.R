@@ -1,0 +1,3 @@
+generate_chorale <- function() {
+
+}
