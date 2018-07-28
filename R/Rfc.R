@@ -62,8 +62,6 @@ for(j in indices){
 arrumar_voz <- function(da_voz) {
   da_voz %>%
     dplyr::mutate(column = as.character(column)) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(column != ".") %>%
     dplyr::mutate(mult = as.numeric(stringr::str_extract(column, "[0-9]{1,2}")),
                   ponto = stringr::str_detect(column, "(?<=[0-9]{1,2})\\."),
                   mult = dplyr::if_else(ponto, mult * 2/3, mult),
@@ -72,6 +70,14 @@ arrumar_voz <- function(da_voz) {
     tidyr::uncount(rept, .id = "tempo") %>%
     dplyr::mutate(note = dplyr::if_else(tempo > 1, "_", note))
 }
-da_res <- readr::read_rds("data-raw/kern-data/rds/chor008.rds")
-da_res %>% purrr::map_dfr(arrumar_voz, .id = "voz")
+# da_res <- readr::read_rds("data-raw/kern-data/rds/chor008.rds")
+# da_res %>% purrr::map_dfr(arrumar_voz, .id = "voz")
+
+arrumar_file <- function(rds_file) {
+  da_voz <- readr::read_rds(rds_file)
+  purrr::map_dfr(da_res, arrumar_voz, .id = "voz")
+}
+arqs <- fs::dir_ls("data-raw/kern-data/rds")
+da_complete <- purrr::map_dfr(arqs, arrumar_file, .id = ".file")
+readr::write_rds(da_complete, "data-raw/da_complete.rds", compress = "xz")
 
